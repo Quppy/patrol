@@ -20,7 +20,7 @@ enum BuildMode {
   profile,
   release;
 
-  static const _defaultScheme = 'Runner';
+  static const _defaultScheme = 'Quppy';
 
   /// Name of this build mode in the Xcode Build Configuration format.
   ///
@@ -261,7 +261,7 @@ class IOSTestBackend {
 
     // See rationale: https://github.com/leancodepl/patrol/issues/1094
     final appIdWithoutFlavor = stripFlavorFromAppId(appId, flavor);
-    final testApp = '$appIdWithoutFlavor.RunnerUITests.xctrunner';
+    final testApp = '$appIdWithoutFlavor.QuppyUITests.xctrunner';
 
     if (device.real) {
       // uninstall from iOS device

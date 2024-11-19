@@ -199,7 +199,7 @@ class IOSAppOptions {
   List<String> buildForTestingInvocation() {
     final cmd = [
       ...['xcodebuild', 'build-for-testing'],
-      ...['-workspace', 'Runner.xcworkspace'],
+      ...['-workspace', 'Quppy.xcworkspace'],
       ...['-scheme', scheme],
       ...['-configuration', configuration],
       ...['-sdk', if (simulator) 'iphonesimulator' else 'iphoneos'],
@@ -227,7 +227,7 @@ class IOSAppOptions {
     final cmd = [
       ...['xcodebuild', 'test-without-building'],
       ...['-xctestrun', xcTestRunPath],
-      ...['-only-testing', 'RunnerUITests/RunnerUITests'],
+      ...['-only-testing', 'QuppyUITests/QuppyUITests'],
       ...[
         '-destination',
         'platform=${device.real ? 'iOS' : 'iOS Simulator'},name=${device.name}',
@@ -293,7 +293,7 @@ class MacOSAppOptions {
   List<String> buildForTestingInvocation() {
     final cmd = [
       ...['xcodebuild', 'build-for-testing'],
-      ...['-workspace', 'Runner.xcworkspace'],
+      ...['-workspace', 'Quppy.xcworkspace'],
       ...['-scheme', scheme],
       ...['-configuration', configuration],
       '-quiet',
@@ -314,7 +314,7 @@ class MacOSAppOptions {
     final cmd = [
       ...['xcodebuild', 'test-without-building'],
       ...['-xctestrun', xcTestRunPath],
-      ...['-only-testing', 'RunnerUITests/RunnerUITests'],
+      ...['-only-testing', 'QuppyUITests/QuppyUITests'],
       ...['-destination', 'platform=macOS'],
       ...['-resultBundlePath', resultBundlePath],
       '-verbose',

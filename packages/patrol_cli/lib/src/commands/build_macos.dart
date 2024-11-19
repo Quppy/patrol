@@ -177,8 +177,8 @@ class BuildMacOSCommand extends PatrolCommand {
     final buildDir =
         join('build', 'macos_integ', 'Build', 'Products', buildMode);
 
-    final appPath = join(buildDir, 'Runner.app');
-    final testAppPath = join(buildDir, 'RunnerUITests-Runner.app');
+    final appPath = join(buildDir, 'Quppy.app');
+    final testAppPath = join(buildDir, 'QuppyUITests-Quppy.app');
 
     _logger
       ..info('$appPath (app under test)')

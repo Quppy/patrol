@@ -189,8 +189,8 @@ class BuildIOSCommand extends PatrolCommand {
         ? join(testRoot, '$buildMode-iphonesimulator')
         : join(testRoot, '$buildMode-iphoneos');
 
-    final appPath = join(buildDir, 'Runner.app');
-    final testAppPath = join(buildDir, 'RunnerUITests-Runner.app');
+    final appPath = join(buildDir, 'Quppy.app');
+    final testAppPath = join(buildDir, 'QuppyUITests-Quppy.app');
 
     _logger
       ..info('$appPath (app under test)')
