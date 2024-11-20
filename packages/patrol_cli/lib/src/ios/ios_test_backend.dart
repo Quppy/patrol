@@ -20,7 +20,7 @@ enum BuildMode {
   profile,
   release;
 
-  static const _defaultScheme = 'Quppy';
+  static const _defaultScheme = 'Runner';
 
   /// Name of this build mode in the Xcode Build Configuration format.
   ///
