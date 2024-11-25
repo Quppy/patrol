@@ -14,12 +14,14 @@ class PatrolLogReader {
     required this.reportPath,
     required this.showFlutterLogs,
     required this.hideTestSteps,
+    required this.clearTestSteps,
   }) : _scope = scope;
 
   final void Function(String) log;
   final String reportPath;
   final bool showFlutterLogs;
   final bool hideTestSteps;
+  final bool clearTestSteps;
   final StreamSubscription<void> Function(
     void Function(String) onData, {
     Function? onError,
@@ -40,6 +42,8 @@ class PatrolLogReader {
   final StreamController<Entry> _controller =
       StreamController<Entry>.broadcast();
   late final StreamSubscription<Entry> _streamSubscription;
+
+  final Map<String, dynamic> _config = {};
 
   void listen() {
     // Listen to the entry stream and pretty print the patrol logs.
@@ -91,11 +95,10 @@ class PatrolLogReader {
 
   /// Take line containg PATROL_LOG tag, parse it to [Entry] and add to stream.
   void _parsePatrolLog(String line) {
-    final regExp = RegExp(r'PATROL_LOG \{(.*?)\}');
+    final regExp = RegExp('PATROL_LOG (.*)');
     final match = regExp.firstMatch(line);
     if (match != null) {
-      final matchedText = match.group(1)!;
-      final json = '{$matchedText}';
+      final json = match.group(1)!;
       final entry = parseEntry(json);
 
       if (entry case TestEntry _) {
@@ -144,6 +147,8 @@ class PatrolLogReader {
       EntryType.test => TestEntry.fromJson(json),
       EntryType.log => LogEntry.fromJson(json),
       EntryType.error => ErrorEntry.fromJson(json),
+      EntryType.warning => WarningEntry.fromJson(json),
+      EntryType.config => ConfigEntry.fromJson(json),
     };
   }
 
@@ -172,7 +177,9 @@ class PatrolLogReader {
             _singleEntries.last.closeTest(entry);
 
             // Optionally clear all printed [StepEntry] and [LogEntry].
-            if (!showFlutterLogs && entry.status != TestEntryStatus.failure) {
+            if (!showFlutterLogs &&
+                clearTestSteps &&
+                entry.status != TestEntryStatus.failure) {
               _clearLines(stepsCounter + logsCounter + 1);
             }
 
@@ -184,10 +191,10 @@ class PatrolLogReader {
             if (!hideTestSteps) {
               // Clear the previous line it's not the new step, or increment counter
               // for new step
-              if (entry.status != StepEntryStatus.start) {
-                _clearPreviousLine();
-              } else {
+              if (entry.status == StepEntryStatus.start) {
                 stepsCounter++;
+              } else if (clearTestSteps) {
+                _clearPreviousLine();
               }
 
               // Print the step entry to the console.
@@ -201,10 +208,31 @@ class PatrolLogReader {
             log(entry.pretty());
 
           case ErrorEntry():
+          case WarningEntry():
             log(entry.pretty());
+          case ConfigEntry():
+            _readConfig(entry);
         }
       },
     );
+  }
+
+  /// Read the config passed by [PatrolLogWriter].
+  void _readConfig(ConfigEntry entry) {
+    if (_config.isNotEmpty) {
+      return;
+    }
+
+    _config.addAll(entry.config);
+
+    if (_config['printLogs'] == false) {
+      final warningEntry = WarningEntry(
+        message: 'Printing flutter steps is disabled in the config. '
+            'To enable it, set `PatrolTesterConfig(printLogs: true)`.',
+      );
+
+      log(warningEntry.pretty());
+    }
   }
 
   /// Returns a summary of the test results. That contains:
@@ -222,7 +250,7 @@ class PatrolLogReader {
       '${Emojis.failure} Failed: $failedTestsCount\n'
       '${failedTestsCount > 0 ? '$failedTestsList\n' : ''}'
       '${Emojis.skip} Skipped: $skippedTests\n'
-      '${Emojis.report} Report: $reportPath\n'
+      '${Emojis.report} Report: ${reportPath.replaceAll(' ', '%20')}\n'
       '${Emojis.duration} Duration: ${_stopwatch.elapsed.inSeconds}s\n';
 
   /// Closes the stream subscription and the stream controller.

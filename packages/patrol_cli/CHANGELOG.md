@@ -1,10 +1,8 @@
-## 3.4.0-dev.2
+## 3.4.0
 
-- Bump `patrol_log` version.
+- Add support for the `patrol_log` package. (#2387)
 
-## 3.4.0-dev.1
-
-- Add support for the patrol_log package. (#2387)
+This version requires version 3.13.0 of `patrol` package.
 
 ## 3.3.0
 
