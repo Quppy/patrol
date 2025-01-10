@@ -1,3 +1,8 @@
+## 3.4.1
+
+- Add android product flavor to dart-define. (#2425)
+- Detect and warn about Orchestrator 1.5.0. (#2437) 
+
 ## 3.4.0
 
 - Add support for the `patrol_log` package. (#2387)
