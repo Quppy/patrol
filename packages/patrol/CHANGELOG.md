@@ -1,6 +1,18 @@
+## Unreleased
+
+- Fix `$.native.tap()` not working with `Selector` having `instance` set.
+
+## 3.14.0
+
+- Remove `exception` from `StepEntry`. When it was too long, it caused crash because of badly formed JSON. (#2481)
+- Bump `patrol_finders` and `patrol_log` versions. 
+- Bump compileSdk to 35. (#2488)
+- Bump Gradle to 8.9.0. (#2488)
+- Make Patrol works with Java 21. (#2488)
+ 
 ## 3.13.2
 
-- Bump `patrol_finders` and `patrol_log` - use version with patched enterText.
+- Bump `patrol_finders` and `patrol_log` - use version with patched enterText. (#2468)
 
 ## 3.13.1
 

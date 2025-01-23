@@ -1,3 +1,10 @@
+## 2.7.0
+
+- Add `alignment` parameter to `waitUntilVisible` in order to improve visibility check on Row and Column widgets. (#2464)
+- Add `isVisibleAt` method to check if a widget is visible at a given alignment in case `visible` fails. (#2464)
+- Remove `exception` from `StepEntry`. When it was too long, it caused crash because of badly formed JSON. (#2481)
+- Bump `patrol_log` version.
+
 ## 2.6.0
 
 - Patch `enterText` into same field twice. (#2461)
