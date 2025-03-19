@@ -167,6 +167,12 @@ abstract class PatrolCommand extends Command<int> {
         help:
             'Clear permissions available through XCUIProtectedResource API before running each test.',
         negatable: false,
+      )
+      ..addOption(
+        'ios',
+        help:
+            'Pass iOS version. If empty, `latest` will be used. This flag only works with iOS simulator.',
+        valueHelp: '17.5',
       );
   }
 
@@ -183,7 +189,7 @@ abstract class PatrolCommand extends Command<int> {
   void usesUninstallOption() {
     argParser.addFlag(
       'uninstall',
-      help: 'Uninstall the app after the test finishes.',
+      help: 'Uninstall the app before and after the test finishes.',
       defaultsTo: true,
     );
   }

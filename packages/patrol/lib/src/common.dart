@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:io' as io;
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:flutter/foundation.dart';
@@ -114,6 +113,13 @@ void patrolTest(
     variant: variant,
     tags: tags,
     (widgetTester) async {
+      widgetTester.binding.platformDispatcher.onSemanticsEnabledChanged = () {
+        // This callback is empty on purpose. It's a workaround for tests
+        // failing on iOS and (from Flutter 3.29.0) on Android.
+        //
+        // See https://github.com/leancodepl/patrol/issues/1474
+      };
+
       if (!constants.hotRestartEnabled) {
         // If Patrol's native automation feature is enabled, then this test will
         // be executed only if the native side requested it to be executed.
@@ -126,14 +132,7 @@ void patrolTest(
           return;
         }
       }
-      if (!kIsWeb && io.Platform.isIOS) {
-        widgetTester.binding.platformDispatcher.onSemanticsEnabledChanged = () {
-          // This callback is empty on purpose. It's a workaround for tests
-          // failing on iOS.
-          //
-          // See https://github.com/leancodepl/patrol/issues/1474
-        };
-      }
+
       await automator.configure();
       // We don't have to call this line because automator.configure() does the same.
       // await automator2.configure();

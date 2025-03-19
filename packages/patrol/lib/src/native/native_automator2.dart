@@ -666,6 +666,8 @@ class NativeAutomator2 {
   }) async {
     assert(from.dx >= 0 && from.dx <= 1);
     assert(from.dy >= 0 && from.dy <= 1);
+    assert(to.dx >= 0 && to.dx <= 1);
+    assert(to.dy >= 0 && to.dy <= 1);
 
     await _wrapRequest(
       'swipe',
@@ -846,6 +848,27 @@ class NativeAutomator2 {
       () => _client.setLocationAccuracy(
         SetLocationAccuracyRequest(
           locationAccuracy: SetLocationAccuracyRequestLocationAccuracy.fine,
+        ),
+      ),
+    );
+  }
+
+  /// Set mock location
+  ///
+  /// Works on Android emulator, iOS simulator and iOS real device. Doesn't
+  /// work on Android real device.
+  Future<void> setMockLocation(
+    double latitude,
+    double longitude, {
+    String? packageName,
+  }) async {
+    await _wrapRequest(
+      'setMockLocation latitude: $latitude, longitude: $longitude',
+      () => _client.setMockLocation(
+        SetMockLocationRequest(
+          latitude: latitude,
+          longitude: longitude,
+          packageName: packageName ?? _config.packageName,
         ),
       ),
     );

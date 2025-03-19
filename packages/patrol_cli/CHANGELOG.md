@@ -1,6 +1,14 @@
 ## Unreleased
 
-- Gracefully handle when analytics fail to send (#2460)
+- Add `--ios` flag to `patrol test` that specifies the iOS version to use. (#2540)
+
+## 3.5.1
+
+- Gracefully handle when analytics fail to send. (#2460)
+- Handle uninstallation of the app after tests finish when using AGP 8.2+. (#2535)
+- Add `--coverage-packages` flag to `patrol test` that specifies which packages should be included 
+in the coverage report. (#2536)
+- Fix skipping tests with coverage collection enabled. (#2539)
 
 ## 3.5.0
 
