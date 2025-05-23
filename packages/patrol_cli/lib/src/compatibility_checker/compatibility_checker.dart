@@ -7,7 +7,7 @@ import 'package:patrol_cli/src/base/exceptions.dart';
 import 'package:patrol_cli/src/base/extensions/completer.dart';
 import 'package:patrol_cli/src/base/logger.dart';
 import 'package:patrol_cli/src/base/process.dart';
-import 'package:patrol_cli/src/compatibility_checker/version_comparator.dart';
+import 'package:patrol_cli/src/compatibility_checker/version_compatibility.dart';
 import 'package:patrol_cli/src/devices.dart';
 import 'package:patrol_cli/src/runner/flutter_command.dart';
 import 'package:process/process.dart';
@@ -28,6 +28,33 @@ class CompatibilityChecker {
   final DisposeScope _disposeScope;
   final Logger _logger;
 
+  /// Generates incompatibility error message with appropriate resolution steps
+  String _incompatibilityMessage({
+    required Version packageVersion,
+    required Version cliVersion,
+    required String additionalInfo,
+    Version? maxCliVersion,
+  }) {
+    final resolveSteps = maxCliVersion != null
+        ? '''
+1. Downgrade patrol_cli to a compatible version by running: 
+   dart pub global activate patrol_cli $maxCliVersion
+   
+2. Or upgrade both "patrol_cli" and "patrol" dependencies to the latest versions.'''
+        : 'Please upgrade both "patrol_cli" and "patrol" dependencies to the latest versions.';
+
+    return '''
+Patrol version $packageVersion defined in your project is not compatible with patrol_cli version $cliVersion.
+$additionalInfo
+
+To resolve this issue:
+$resolveSteps
+
+Check the compatibility table at: https://patrol.leancode.co/documentation/compatibility-table
+''';
+  }
+
+  /// Checks if the version compatibility and throws an error if incompatible
   Future<void> checkVersionsCompatibility({
     required FlutterCommand flutterCommand,
     required TargetPlatform targetPlatform,
@@ -82,18 +109,49 @@ class CompatibilityChecker {
 
     final cliVersion = Version.parse(constants.version);
     final patrolVersion = Version.parse(packageVersion!);
-    final versionComparator = VersionComparator(
-      cliVersionRange: _patrolCliVersionRange,
-      packageVersionRange: _patrolVersionRange,
-    );
 
-    final isCompatible =
-        versionComparator.isCompatible(cliVersion, patrolVersion);
+    final isCompatible = areVersionsCompatible(cliVersion, patrolVersion);
 
     if (!isCompatible) {
+      // Find the maximum compatible CLI version for this patrol version
+      final maxCliVersion = getMaxCompatibleCliVersion(patrolVersion);
+
       throwToolExit(
-        'Patrol version $patrolVersion defined in the project is not compatible with patrol_cli version $cliVersion\n'
-        'Please upgrade both "patrol_cli" and "patrol" dependency in project to the latest versions.',
+        _incompatibilityMessage(
+          packageVersion: patrolVersion,
+          cliVersion: cliVersion,
+          additionalInfo:
+              'This will prevent your tests from running correctly.',
+          maxCliVersion: maxCliVersion,
+        ),
+      );
+    }
+  }
+
+  /// Checks version compatibility and fails the build process if incompatible
+  Future<void> checkVersionsCompatibilityForBuild({
+    required String? patrolVersion,
+  }) async {
+    if (patrolVersion == null) {
+      return;
+    }
+
+    final cliVersion = Version.parse(constants.version);
+    final packageVersion = Version.parse(patrolVersion);
+
+    final isCompatible = areVersionsCompatible(cliVersion, packageVersion);
+    if (!isCompatible) {
+      // Find the maximum compatible CLI version for this patrol version
+      final maxCliVersion = getMaxCompatibleCliVersion(packageVersion);
+
+      throwToolExit(
+        _incompatibilityMessage(
+          packageVersion: packageVersion,
+          cliVersion: cliVersion,
+          additionalInfo:
+              'This will prevent your tests from running correctly.',
+          maxCliVersion: maxCliVersion,
+        ),
       );
     }
   }
@@ -167,119 +225,3 @@ Future<void> _checkJavaVersion(
     );
   }
 }
-
-final _patrolVersionRange = [
-  VersionRange(
-    min: Version.parse('1.0.9'),
-    max: Version.parse('1.1.11'),
-  ),
-  VersionRange(
-    min: Version.parse('2.0.0'),
-    max: Version.parse('2.0.0'),
-  ),
-  VersionRange(
-    min: Version.parse('2.0.1'),
-    max: Version.parse('2.2.5'),
-  ),
-  VersionRange(
-    min: Version.parse('2.3.0'),
-    max: Version.parse('2.3.2'),
-  ),
-  VersionRange(
-    min: Version.parse('3.0.0'),
-    max: Version.parse('3.3.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.4.0'),
-    max: Version.parse('3.5.2'),
-  ),
-  VersionRange(
-    min: Version.parse('3.6.0'),
-    max: Version.parse('3.10.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.10.0'),
-    max: Version.parse('3.10.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.11.0'),
-    max: Version.parse('3.11.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.11.2'),
-    max: Version.parse('3.11.2'),
-  ),
-  VersionRange(
-    min: Version.parse('3.12.0'),
-    max: Version.parse('3.12.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.13.0'),
-    max: Version.parse('3.13.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.13.1'),
-    max: Version.parse('3.13.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.14.0'),
-  ),
-];
-
-final _patrolCliVersionRange = [
-  VersionRange(
-    min: Version.parse('1.1.4'),
-    max: Version.parse('1.1.11'),
-  ),
-  VersionRange(
-    min: Version.parse('2.0.0'),
-    max: Version.parse('2.0.0'),
-  ),
-  VersionRange(
-    min: Version.parse('2.0.1'),
-    max: Version.parse('2.1.5'),
-  ),
-  VersionRange(
-    min: Version.parse('2.2.0'),
-    max: Version.parse('2.2.2'),
-  ),
-  VersionRange(
-    min: Version.parse('2.3.0'),
-    max: Version.parse('2.5.0'),
-  ),
-  VersionRange(
-    min: Version.parse('2.6.0'),
-    max: Version.parse('2.6.4'),
-  ),
-  VersionRange(
-    min: Version.parse('2.6.5'),
-    max: Version.parse('3.0.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.1.0'),
-    max: Version.parse('3.1.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.2.0'),
-    max: Version.parse('3.2.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.2.1'),
-    max: Version.parse('3.2.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.3.0'),
-    max: Version.parse('3.3.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.4.0'),
-    max: Version.parse('3.4.0'),
-  ),
-  VersionRange(
-    min: Version.parse('3.4.1'),
-    max: Version.parse('3.4.1'),
-  ),
-  VersionRange(
-    min: Version.parse('3.5.0'),
-  ),
-];
